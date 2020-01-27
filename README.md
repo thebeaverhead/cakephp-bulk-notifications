@@ -27,50 +27,50 @@ In your app's console:
 To create an email to be sended (NOT increment):
 
 ```php
-    $userEntity = TableRegistry::getTableLocator()->get('Users')->get($userId);
+$userEntity = TableRegistry::getTableLocator()->get('Users')->get($userId);
 
-    $topic = ['title' => 'foo'];
-    $comments = [['text' => 'foo'], ['text' => 'bar']];
+$topic = ['title' => 'foo'];
+$comments = [['text' => 'foo'], ['text' => 'bar']];
 
-    $bulkNotification = new BulkNotification();
-    $bulkNotification->add(
-        $userEntity,
-        'Email subject',
-        'email/template/path',
-        ['topic' => $topic, 'comments' => $comments],
-        ['sendDate' => 1580108540, 'receiverEmailColumn' => 'email']
-    );
+$bulkNotification = new BulkNotification();
+$bulkNotification->add(
+    $userEntity,
+    'Email subject',
+    'email/template/path',
+    ['topic' => $topic, 'comments' => $comments],
+    ['sendDate' => 1580108540, 'receiverEmailColumn' => 'email']
+);
 ```
 To create increment email to be sended:
 
 ```php
-    $userEntity = TableRegistry::getTableLocator()->get('Users')->get($userId);
-    $topic = ['title' => 'foo'];
-    $comments = [['text' => 'foo'], ['text' => 'bar']];
+$userEntity = TableRegistry::getTableLocator()->get('Users')->get($userId);
+$topic = ['title' => 'foo'];
+$comments = [['text' => 'foo'], ['text' => 'bar']];
 
-    $bulkNotification = new BulkNotification();
-    $bulkNotification->addIncrement(
-        $userEntity,
-        'Email increment subject',
-        'email/template/path',
-        ['topic' => $topic],                    // not incremental data
-        ['comments' => $comments],              // incremental data
-        ['sendDate' => 1580108540, 'receiverEmailColumn' => 'email']
-    );
-    
+$bulkNotification = new BulkNotification();
+$bulkNotification->addIncrement(
+    $userEntity,
+    'Email increment subject',
+    'email/template/path',
+    ['topic' => $topic],                    // not incremental data
+    ['comments' => $comments],              // incremental data
+    ['sendDate' => 1580108540, 'receiverEmailColumn' => 'email']
+);
 
-    // Increment notification has been created
-    // in 10 sec new comment has been added to the same topic
-    sleep(10);
-    $comments = [['text' => 'baz']];
 
-    $bulkNotification->addIncrement(
-        $userEntity,
-        'Email increment subject',
-        'email/template/path',
-        ['topic' => $topic],                    // not incremental data
-        ['comments' => $comments]               // incremental data
-    );
+// Increment notification has been created
+// in 10 sec new comment has been added to the same topic
+sleep(10);
+$comments = [['text' => 'baz']];
+
+$bulkNotification->addIncrement(
+    $userEntity,
+    'Email increment subject',
+    'email/template/path',
+    ['topic' => $topic],                    // not incremental data
+    ['comments' => $comments]               // incremental data
+);
 ```
 
 create email template.ctp
@@ -101,25 +101,23 @@ To send notifications run
 
 ```sh
 bin/cake BulkNotifications run
-
-actually you need add this command to the crontab
 ```
-
+Actually you need add this command to the crontab
 ## Configure:
 
 Both methods `add` and `addIncrement` support `$options` parameter
 ```php
-     $options = [
-        'sendDate' => 1580108540,         // (null by default) if this date isn't reached notification won't be sent
-        'receiverEmailColumn' => 'email'  // (`email` by default) email column in the receiver entity
-     ];
+$options = [
+ 'sendDate' => 1580108540,         // (null by default) if this date isn't reached notification won't be sent
+ 'receiverEmailColumn' => 'email'  // (`email` by default) email column in the receiver entity
+];
 ```
 
 Shell BulkNotifications supports config `BulkNotifications.send_delay` in seconds (30sec by default)
 It won't sent an incremental email if it has been created or updated less than 30 sec ago
 In config/app.php you can add:
 ```php
-  'BulkNotifications => [
-    'send_delay' => 60,
-  ],
+'BulkNotifications' => [
+  'send_delay' => 60
+],
 ```
