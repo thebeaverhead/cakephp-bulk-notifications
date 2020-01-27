@@ -1,0 +1,24 @@
+{
+    "name": "thebeaverhead/cakephp-bulk-notifications",
+    "description": "Bulk notifications plugin for CakePHP",
+    "type": "cakephp-plugin",
+    "license": "MIT",
+    "require": {
+        "php": "^7.0",
+        "cakephp/cakephp": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7.14|^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BulkNotifications\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BulkNotifications\\Test\\": "tests/",
+            "Cake\\Test\\": "vendor/cakephp/cakephp/tests/"
+        }
+    }
+}
