@@ -19,7 +19,13 @@ composer require thebeaverhead/cakephp-bulk-notifications
 In your app's console:
 
 ```sh
-./bin/cake plugin load EmailNotifications
+bin/cake plugin load BulkNotifications
+```
+
+Apply migration:
+
+```sh
+bin/cake migrations migrate -p BulkNotifications
 ```
 
 ## Usage:

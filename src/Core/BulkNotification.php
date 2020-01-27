@@ -109,7 +109,7 @@ class BulkNotification
       'subject' => $subject,
       'template_path' => $template,
       'data' => json_encode($data),
-      'increment_data' => $isIncrement ? json_encode($incrementData) : null,
+      'increment_data' => json_encode($incrementData),
       'is_increment' => true,
       'send_date' => $options['sendDate'],
     ]);
