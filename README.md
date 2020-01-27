@@ -28,9 +28,11 @@ To create an email to be sended (NOT increment):
 
 ```php
 $userEntity = TableRegistry::getTableLocator()->get('Users')->get($userId);
-
 $topic = ['title' => 'foo'];
-$comments = [['text' => 'foo'], ['text' => 'bar']];
+$comments = [
+    ['text' => 'foo'], 
+    ['text' => 'bar']
+];
 
 $bulkNotification = new BulkNotification();
 $bulkNotification->add(
@@ -46,7 +48,10 @@ To create increment email to be sended:
 ```php
 $userEntity = TableRegistry::getTableLocator()->get('Users')->get($userId);
 $topic = ['title' => 'foo'];
-$comments = [['text' => 'foo'], ['text' => 'bar']];
+$comments = [
+    ['text' => 'foo'], 
+    ['text' => 'bar']
+];
 
 $bulkNotification = new BulkNotification();
 $bulkNotification->addIncrement(
@@ -62,7 +67,9 @@ $bulkNotification->addIncrement(
 // Increment notification has been created
 // in 10 sec new comment has been added to the same topic
 sleep(10);
-$comments = [['text' => 'baz']];
+$comments = [
+    ['text' => 'baz']
+];
 
 $bulkNotification->addIncrement(
     $userEntity,
@@ -102,10 +109,10 @@ To send notifications run
 ```sh
 bin/cake BulkNotifications run
 ```
-Actually you need add this command to the crontab
+Actually you need add this command to the crontab.
 ## Configure:
 
-Both methods `add` and `addIncrement` support `$options` parameter
+Both methods `add` and `addIncrement` support `$options` parameter:
 ```php
 $options = [
  'sendDate' => 1580108540,         // (null by default) if this date isn't reached notification won't be sent
@@ -114,7 +121,8 @@ $options = [
 ```
 
 Shell BulkNotifications supports config `BulkNotifications.send_delay` in seconds (30sec by default)
-It won't sent an incremental email if it has been created or updated less than 30 sec ago
+It won't sent an incremental email if previous notification has been created or updated less than 30 sec ago.
+
 In config/app.php you can add:
 ```php
 'BulkNotifications' => [
