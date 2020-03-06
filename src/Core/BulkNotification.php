@@ -18,14 +18,14 @@ class BulkNotification
   /**
    * Add notification
    *
-   * @param EntityInterface $receiver
+   * @param EntityInterface | array $receivers
    * @param string $subject
    * @param string $template
    * @param array $data
    * @param array $options
    * @return mixed
    */
-  public function add(EntityInterface $receiver, string $subject, string $template, array $data = [], $options = [])
+  public function add($receivers, string $subject, string $template, array $data = [], $options = [])
   {
     $defaultOptions = [
       'sendDate' => null,
@@ -34,25 +34,32 @@ class BulkNotification
 
     $options = array_merge($defaultOptions, $options);
 
-    $BulkNotification = $this->BulkNotifications->newEntity([
-      'receiver_id' => $receiver->id,
-      'receiver_model' => $receiver->getSource(),
-      'receiver_email_column' => $options['receiverEmailColumn'],
-      'subject' => $subject,
-      'template_path' => $template,
-      'data' => json_encode($data),
-      'increment_data' => null,
-      'is_increment' => false,
-      'send_date' => $options['sendDate'],
-    ]);
+    if ($receivers instanceof EntityInterface) {
+      $receivers = [$receivers];
+    }
 
-    $this->BulkNotifications->save($BulkNotification);
+    /** @var EntityInterface $receiver */
+    foreach ($receivers as $receiver) {
+      $bulkNotification = $this->BulkNotifications->newEntity([
+        'receiver_id' => $receiver->id,
+        'receiver_model' => $receiver->getSource(),
+        'receiver_email_column' => $options['receiverEmailColumn'],
+        'subject' => $subject,
+        'template_path' => $template,
+        'data' => json_encode($data),
+        'increment_data' => null,
+        'is_increment' => false,
+        'send_date' => $options['sendDate'],
+      ]);
+
+      $this->BulkNotifications->save($bulkNotification);
+    }
   }
 
   /**
    * Add notification
    *
-   * @param EntityInterface $receiver
+   * @param EntityInterface | array $receiver
    * @param string $subject
    * @param string $template
    * @param array $data
@@ -60,7 +67,7 @@ class BulkNotification
    * @param array $options
    * @return mixed
    */
-  public function addIncrement(EntityInterface $receiver, string $subject, string $template, array $data = [], array $incrementData = [], $options = [])
+  public function addIncrement($receivers, string $subject, string $template, array $data = [], array $incrementData = [], $options = [])
   {
     $defaultOptions = [
       'sendDate' => null,
@@ -69,24 +76,44 @@ class BulkNotification
 
     $options = array_merge($defaultOptions, $options);
 
-    /** @var \BulkNotifications\Model\Entity\BulkNotification $BulkNotification */
-    $BulkNotification = $this->BulkNotifications->find()
-      ->where([
-        'receiver_id' => $receiver->id,
-        'receiver_model' => $receiver->getSource(),
-        'receiver_email_column' => $options['receiverEmailColumn'],
-        'subject' => $subject,
-        'template_path' => $template,
-        'is_increment IS' => true,
-        'is_sent IS' => false
-      ])
-      ->first();
+    if ($receivers instanceof EntityInterface) {
+      $receivers = [$receivers];
+    }
 
-    if ($BulkNotification) {
-      $BulkNotification->data = json_encode($data);
-      $BulkNotification->sent_date = $options['sendDate'];
+    /** @var EntityInterface $receiver */
+    foreach ($receivers as $receiver) {
+      /** @var \BulkNotifications\Model\Entity\BulkNotification $bulkNotification */
+      $bulkNotification = $this->BulkNotifications->find()
+        ->where([
+          'receiver_id' => $receiver->id,
+          'receiver_model' => $receiver->getSource(),
+          'receiver_email_column' => $options['receiverEmailColumn'],
+          'subject' => $subject,
+          'template_path' => $template,
+          'is_increment IS' => true,
+          'is_sent IS' => false
+        ])
+        ->first();
 
-      $oldIncrementData = json_decode($BulkNotification->increment_data, true);
+      if (!$bulkNotification) {
+        $bulkNotification = $this->BulkNotifications->newEntity([
+          'receiver_id' => $receiver->id,
+          'receiver_model' => $receiver->getSource(),
+          'receiver_email_column' => $options['receiverEmailColumn'],
+          'subject' => $subject,
+          'template_path' => $template,
+          'data' => json_encode($data),
+          'increment_data' => json_encode($incrementData),
+          'is_increment' => true,
+          'send_date' => $options['sendDate'],
+        ]);
+
+        $this->BulkNotifications->save($bulkNotification);
+
+        continue;
+      }
+
+      $oldIncrementData = json_decode($bulkNotification->increment_data, true);
       $keys = array_unique(array_merge(array_keys($oldIncrementData), array_keys($incrementData)));
 
       $incrementDataToSave = [];
@@ -95,25 +122,13 @@ class BulkNotification
         $incrementDataToSave[$key] = array_merge($oldIncrementData[$key] ?? [], $incrementData[$key] ?? []);
       }
 
-      $BulkNotification->increment_data = json_encode($incrementDataToSave);
+      $bulkNotification = $this->BulkNotifications->patchEntity($bulkNotification, [
+        'data' => json_encode($data),
+        'increment_data' => json_encode($incrementDataToSave),
+        'sent_date' => $options['sendDate'],
+      ]);
 
-      $this->BulkNotifications->save($BulkNotification);
-
-      return;
+      $this->BulkNotifications->save($bulkNotification);
     }
-
-    $BulkNotification = $this->BulkNotifications->newEntity([
-      'receiver_id' => $receiver->id,
-      'receiver_model' => $receiver->getSource(),
-      'receiver_email_column' => $options['receiverEmailColumn'],
-      'subject' => $subject,
-      'template_path' => $template,
-      'data' => json_encode($data),
-      'increment_data' => json_encode($incrementData),
-      'is_increment' => true,
-      'send_date' => $options['sendDate'],
-    ]);
-
-    $this->BulkNotifications->save($BulkNotification);
   }
 }

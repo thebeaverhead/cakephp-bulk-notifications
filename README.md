@@ -53,6 +53,8 @@ To create increment email to be sended:
 
 ```php
 $userEntity = TableRegistry::getTableLocator()->get('Users')->get($userId);
+$userEntity2 = TableRegistry::getTableLocator()->get('Users')->get($userId2);
+
 $topic = ['title' => 'foo'];
 $comments = [
     ['text' => 'foo'], 
@@ -61,7 +63,7 @@ $comments = [
 
 $bulkNotification = new BulkNotification();
 $bulkNotification->addIncrement(
-    $userEntity,
+    [$userEntity, $userEntity2],
     'Email increment subject',
     'email/template/path',
     ['topic' => $topic],                    // not incremental data
